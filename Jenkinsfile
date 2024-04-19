@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    environment {\
+        EMAIL_RECIPIENT = 's223632922@deakin.edu.au'
+    }
     stages {
         stage('Build') {
             steps {
@@ -11,6 +13,28 @@ pipeline {
             steps {
                 echo 'Running unit and integration tests using JUnit and Mockito.'
             }
+            post {
+                success {
+                    script {
+                        def log = currentBuild.rawBuild.getLog(100).join('\n') // Get the last 100 lines of the console log
+                        emailext (
+                            subject: "SUCCESS: Unit and Integration Tests",
+                            body: "The Unit and Integration Tests stage completed successfully.\\n\\nConsole Log:\\n${log}",
+                            to: env.EMAIL_RECIPIENT
+                        )
+                    }
+                }
+                failure {
+                    script {
+                        def log = currentBuild.rawBuild.getLog(100).join('\n') // Get the last 100 lines of the console log
+                        emailext (
+                            subject: "FAILURE: Unit and Integration Tests",
+                            body: "The Unit and Integration Tests stage failed.\\n\\nConsole Log:\\n${log}",
+                            to: env.EMAIL_RECIPIENT
+                        )
+                    }
+                }
+            }
         }
         stage('Code Analysis') {
             steps {
@@ -20,6 +44,28 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo 'Performing a security scan using OWASP ZAP to detect vulnerabilities.'
+            }
+            post {
+                success {
+                    script {
+                        def log = currentBuild.rawBuild.getLog(100).join('\n')
+                        emailext (
+                            subject: "SUCCESS: Security Scan",
+                            body: "The Security Scan stage completed successfully.\\n\\nConsole Log:\\n${log}",
+                            to: env.EMAIL_RECIPIENT
+                        )
+                    }
+                }
+                failure {
+                    script {
+                        def log = currentBuild.rawBuild.getLog(100).join('\n')
+                        emailext (
+                            subject: "FAILURE: Security Scan",
+                            body: "The Security Scan stage failed.\\n\\nConsole Log:\\n${log}",
+                            to: env.EMAIL_RECIPIENT
+                        )
+                    }
+                }
             }
         }
         stage('Deploy to Staging') {
@@ -38,10 +84,4 @@ pipeline {
             }
         }
     }
-    post {
-        always {
-            mail bcc: '', body: "A Jenkins build status email.\n\nBUILD: ${env.JOB_NAME}\nBUILD NUMBER: ${env.BUILD_NUMBER}\nBUILD STATUS: ${currentBuild.currentResult}", cc: '', from: '', replyTo: '', subject: "Build Status: ${currentBuild.currentResult}", to: "amontazeri8@gmail.com"
-        }
-    }
 }
-
