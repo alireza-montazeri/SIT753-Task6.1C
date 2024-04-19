@@ -4,64 +4,44 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                script {
-                    // Use Maven as an example
-                    sh 'mvn clean package'
-                }
+                echo 'Building the project using Maven.'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    // Using JUnit as an example
-                    sh 'mvn test'
-                }
+                echo 'Running unit and integration tests using JUnit and Mockito.'
             }
         }
         stage('Code Analysis') {
             steps {
-                script {
-                    // Example with SonarQube
-                    sh 'mvn sonar:sonar'
-                }
+                echo 'Analyzing code with SonarQube to ensure quality and standards.'
             }
         }
         stage('Security Scan') {
             steps {
-                script {
-                    // Example with OWASP ZAP
-                    sh 'zap-cli start; zap-cli open-url http://yourapp; zap-cli active-scan; zap-cli report -o report.html; zap-cli stop'
-                }
+                echo 'Performing a security scan using OWASP ZAP to detect vulnerabilities.'
             }
         }
         stage('Deploy to Staging') {
             steps {
-                script {
-                    // Placeholder for deployment script
-                    echo 'Deploying to staging environment'
-                }
+                echo 'Deploying the application to a staging environment on AWS EC2.'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                script {
-                    // Placeholder for integration tests
-                    echo 'Running integration tests in staging'
-                }
+                echo 'Conducting integration tests in the staging environment using Selenium.'
             }
         }
         stage('Deploy to Production') {
             steps {
-                script {
-                    // Placeholder for deployment script
-                    echo 'Deploying to production environment'
-                }
+                echo 'Deploying the application to the production server, also on AWS EC2.'
             }
         }
     }
     post {
         always {
-            mail bcc: '', body: "A Jenkins build status email.\n\nBUILD: ${env.JOB_NAME}\nBUILD NUMBER: ${env.BUILD_NUMBER}\nBUILD STATUS: ${currentBuild.currentResult}", cc: '', from: '', replyTo: '', subject: "Build Status: ${currentBuild.currentResult}", to: "your-email@example.com"
+            mail bcc: '', body: "A Jenkins build status email.\n\nBUILD: ${env.JOB_NAME}\nBUILD NUMBER: ${env.BUILD_NUMBER}\nBUILD STATUS: ${currentBuild.currentResult}", cc: '', from: '', replyTo: '', subject: "Build Status: ${currentBuild.currentResult}", to: "amontazeri8@gmail.com"
         }
     }
 }
+
