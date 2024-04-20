@@ -1,86 +1,70 @@
 pipeline {
     agent any
-    environment {\
+    environment {
         EMAIL_RECIPIENT = 's223632922@deakin.edu.au'
     }
     stages {
         stage('Build') {
             steps {
-                echo 'Building the project using Maven.'
+                echo 'Stage 1: Build - In this stage, the source code is compiled and packaged into an executable or deployable artifact. Tool used: Maven for Java projects, which automates the build lifecycle and dependencies.'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running unit and integration tests using JUnit and Mockito.'
+                echo 'Stage 2: Unit and Integration Tests - This stage runs automated tests to validate the integrity and correctness of the code. For unit testing, JUnit is used to test individual components; for integration testing, TestNG could be used to handle test suites and groups.'
             }
             post {
-                success {
+                always {
                     script {
-                        def log = currentBuild.rawBuild.getLog(100).join('\n') // Get the last 100 lines of the console log
-                        emailext (
-                            subject: "SUCCESS: Unit and Integration Tests",
-                            body: "The Unit and Integration Tests stage completed successfully.\\n\\nConsole Log:\\n${log}",
-                            to: env.EMAIL_RECIPIENT
-                        )
+                        // Save the last 1000 lines of the log to a file
+                        writeFile file: 'console-log.txt', text: currentBuild.rawBuild.getLog(1000).join('\n')
                     }
-                }
-                failure {
-                    script {
-                        def log = currentBuild.rawBuild.getLog(100).join('\n') // Get the last 100 lines of the console log
-                        emailext (
-                            subject: "FAILURE: Unit and Integration Tests",
-                            body: "The Unit and Integration Tests stage failed.\\n\\nConsole Log:\\n${log}",
-                            to: env.EMAIL_RECIPIENT
-                        )
-                    }
+                    emailext (
+                        subject: "${currentBuild.currentResult}: Unit and Integration Tests",
+                        body: "Please find the attached log for details of the test execution.",
+                        attachmentsPattern: 'console-log.txt',
+                        to: "${env.EMAIL_RECIPIENT}"
+                    )
                 }
             }
         }
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code with SonarQube to ensure quality and standards.'
+                echo 'Stage 3: Code Analysis - Automated code analysis is performed to ensure code quality and adherence to coding standards. Tools like SonarQube can be used here to perform static code analysis, highlighting potential issues and technical debt.'
             }
         }
         stage('Security Scan') {
             steps {
-                echo 'Performing a security scan using OWASP ZAP to detect vulnerabilities.'
+                echo 'Stage 4: Security Scan - Security vulnerabilities within the code are identified and reported. Tools such as OWASP ZAP can be used for dynamic application security testing (DAST) to simulate attacks on the application.'
             }
             post {
-                success {
+                always {
                     script {
-                        def log = currentBuild.rawBuild.getLog(100).join('\n')
-                        emailext (
-                            subject: "SUCCESS: Security Scan",
-                            body: "The Security Scan stage completed successfully.\\n\\nConsole Log:\\n${log}",
-                            to: env.EMAIL_RECIPIENT
-                        )
+                        // Save the last 1000 lines of the log to a file
+                        writeFile file: 'console-log.txt', text: currentBuild.rawBuild.getLog(1000).join('\n')
                     }
-                }
-                failure {
-                    script {
-                        def log = currentBuild.rawBuild.getLog(100).join('\n')
-                        emailext (
-                            subject: "FAILURE: Security Scan",
-                            body: "The Security Scan stage failed.\\n\\nConsole Log:\\n${log}",
-                            to: env.EMAIL_RECIPIENT
-                        )
-                    }
+                    emailext (
+                        subject: "${currentBuild.currentResult}: Security Scan",
+                        body: "Please find the attached log for details of the security scan.",
+                        attachmentsPattern: 'console-log.txt',
+                        to: "${env.EMAIL_RECIPIENT}"
+                    )
                 }
             }
         }
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying the application to a staging environment on AWS EC2.'
+                echo 'Stage 5: Deploy to Staging - The built and tested application is deployed to a staging environment, which mimics the production environment. This is crucial for further testing and client reviews. Tools like Jenkins Deployment plugins or AWS CodeDeploy can be used to automate this process.'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Conducting integration tests in the staging environment using Selenium.'
+                echo 'Stage 6: Integration Tests on Staging - Additional integration tests are conducted in the staging environment to ensure the application operates as expected under conditions that closely simulate the production environment. Selenium can be used here for web application testing.'
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying the application to the production server, also on AWS EC2.'
+                echo 'Stage 7: Deploy to Production - Finally, the application is deployed to the production server where it becomes available to end users. This can be automated using tools like Jenkins or through specific deployment tools like AWS CodeDeploy, depending on the hosting environment.'
             }
         }
     }
